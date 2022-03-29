@@ -13,14 +13,15 @@ import datetime
 import sys,os,re
 import io
 
-
-
-@app.route('/')
+#首页
+@app.route("/", methods=["GET", "POST"])
 def index():
     """
     :return: 返回index页面
     """
-    return render_template('index.html')
+    print("request.args:"+str(request.args))
+    (plist_info,mobileprovision_info)=(None,None)
+    return render_template('index.html',data=plist_info)
 
 
 
@@ -68,13 +69,6 @@ def find_path(zip_file, pattern_str):
         if m is not None:
             return m.group()
         
-        
-#首页
-@app.route("/", methods=["GET", "POST"])
-def index():
-    print("request.args:"+str(request.args))
-    (plist_info,mobileprovision_info)=(None,None)
-    return render_template('ipa_install.html',data=plist_info)
 
 
 @app.route("/upload_file", methods=["GET", "POST"])
@@ -95,6 +89,4 @@ def upload_file():
             return json.dumps(plist_info)
     else:
         return json.dumps(plist_info)
-    
-    
     
