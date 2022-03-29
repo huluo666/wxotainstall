@@ -113,6 +113,7 @@
 				formData.append('file', $('#dropInputFile')[0].files[0]) //把file添加进去  name命名为img
 				$.ajax({
 					url: "/upload_file",
+					timeout : 3000,//30s
 					type: 'POST',
 					data: formData,
 					async: true,
