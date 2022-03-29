@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+		<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+		
+		<!--文件上传dropify	-->
+		<link href="https://cdn.bootcdn.net/ajax/libs/Dropify/0.2.2/css/dropify.min.css" rel="stylesheet">
+		<script src="https://cdn.bootcdn.net/ajax/libs/Dropify/0.2.2/js/dropify.min.js"></script>
+		
+		<style>
+			.container {
+				display: grid;
+/*				background-color:white;*/
+				grid-template-columns: 40% 60%;
+			}
+			
+			.left {
+				margin-left: 30px;
+				height: 300px;
+/*				background: green;*/
+			}
+			
+			.right {
+				height: 100%;
+				margin-left: 30px;
+				margin-right: 10px;
+/*				background: red;*/
+			}
+			.download_btn {
+				display:inline-block; /* 设置为块元素 */
+				width: 180px;
+				height: 40px;
+				line-height: 40px; /* 设置垂直居中 */
+				border-radius:20px;
+				margin:0 auto;
+				background: #29BB9C;   
+				color:#ffffff;
+			}
+			a:hover {background:#628FA4;}
+			
+			#uploadBtn {
+				text-decoration: none;
+				display:block;
+				background-color: #4CAF50;
+				border: none;
+				color: white;
+				width: 180px;
+				height: 40px;
+				line-height: 40px; /* 设置垂直居中 */
+				font-size: 16px;
+				border-radius:5px;
+				margin:10px auto;
+			}
+			
+			.dropify-wrapper .dropify-message p{
+				font-size: 16px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<div class="left">
+				<h2 id="title" style="text-align:center;">上传ipa文件进行解析</h2>
+				<form  method="post" enctype="multipart/form-data">
+					<input type="file" name="file" id="dropInputFile" class="dropify" data-height="200"/>
+					<button type="button" id="uploadBtn" onclick="dropifyUpload()">解析</button>
+				</form>
+			</div>
+			<div class="right">
+				<h2 id="AppName" style="text-align:center;">应用名称</h2>
+				<p style="text-align: center">
+					<a class="download_btn" style="font-size:18px;text-decoration:none;" href="itms-services://?action=download-manifest&url=https://gitee.com/huluo666/IPAInstall/raw/master/manifest.plist">安装</a>
+				</p>
+				
+				<p class="appinfo" style="font-size:15px;text-align:center;color:#9096A3;">版本：{{data.CFBundleShortVersionString}} (build 1) 大小：{{data.filesize}} MB 更新时间 ：1 天前</p>
+				<p class="subtitle" id="SafariTips" style="font-size:15px;text-align:center;">通过Safari打开链接，点击按钮下载安装</p>
+				<div id="qrcode" style="width:200px; height:200px;margin:0 auto;"></div>			
+			</div>
+		</div>
+		
+		<script type="text/javascript">
+			//生成二维码
+			function creatQrcode () {
+				var url = window.location.href;
+				console.log(url)
+				$('#qrcode').qrcode({
+					text: url,      // 二维码的内容
+					render: "canvas",               // 设置渲染方式
+					width: 200,                     // 设置宽度: 默认256
+					height: 200,                    // 设置高度: 默认256
+					background: "#ffffff",          // 背景颜色
+					foreground: "#000000",          // 前景颜色
+					src: "./logo.png",              // logo地址
+				});
+			}
+			
+			creatQrcode();
+			
+			$('.dropify').dropify({
+				messages: {
+					'default': '点击选择安装包，或拖拽文件到此区域',
+					'replace': '点击或拖拽文件替换',
+					'remove':  '移除文件',
+					'error':   '发生错误'
+				}
+			});
+			
+			function dropifyUpload() {
+				var formData = new FormData()  //创建一个forData
+				formData.append('file', $('#dropInputFile')[0].files[0]) //把file添加进去  name命名为img
+				$.ajax({
+					url: "/upload_file",
+					type: 'POST',
+					data: formData,
+					async: false,
+					cache: false,
+					contentType: false,
+					processData: false,
+					success: function (data) {
+						console.log("uploadSuccess:"+data)
+						//JSON2Dict                      
+						try {
+							var result = JSON.parse(data);
+							$("#AppName").text(result["CFBundleDisplayName"])
+							$(".appinfo").text(`版本：${result["CFBundleShortVersionString"]} (build 1)  大小：${result["filesize"]}MB  更新时间：1 天前`);
+						} catch (e) {
+							return false;
+						}
+					},
+					error: function (data) {
+						console.log("uploadError")
+						console.log(JSON.stringify(data))
+						alert(data);
+					}
+				});
+			}
+		</script>
+	</body>
+</html>
