@@ -108,33 +108,42 @@
 				}
 			});
 			
-			function dropifyUpload() {
+			function getAjaxData() {
+				var defer = $.Deferred();
 				var formData = new FormData()  //创建一个forData
 				formData.append('file', $('#dropInputFile')[0].files[0]) //把file添加进去  name命名为img
 				$.ajax({
 					url: "/upload_file",
-					timeout : 30000,//30s
+					timeout : 30000,
 					type: 'POST',
 					data: formData,
 					async: true,
-					cache: false,
 					contentType: false,
 					processData: false,
 					success: function (data) {
-						console.log("uploadSuccess:"+data)
-						//JSON2Dict                      
-						try {
-							var result = JSON.parse(data);
-							$("#AppName").text(result["CFBundleDisplayName"])
-							$(".appinfo").text(`版本：${result["CFBundleShortVersionString"]} (build 1)  大小：${result["filesize"]}MB  更新时间：1 天前`);
-						} catch (e) {
-							return false;
-						}
+						defer.resolve(data);
+						console.log("uploadSuccess")
 					},
 					error: function (data) {
 						console.log("uploadError")
 						console.log(JSON.stringify(data))
 						alert(data);
+					}
+				});
+				return defer;
+			}
+
+			function dropifyUpload() {
+				$.when(getAjaxData()).done(function (data) {					
+					console.log("getAjaxDataSucess");
+					// 执行其他代码
+					//JSON2Dict                      
+					try {
+						var result = JSON.parse(data);
+						$("#AppName").text(result["CFBundleDisplayName"])
+						$(".appinfo").text(`版本：${result["CFBundleShortVersionString"]} (build 1)  大小：${result["filesize"]}MB  更新时间：1 天前`);
+					} catch (e) {
+						return false;
 					}
 				});
 			}
